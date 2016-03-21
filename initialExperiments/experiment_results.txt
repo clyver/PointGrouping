@@ -1,0 +1,53 @@
+Before solving this problem, I wanted to gain a sense for how applicable and consistent geohashes are.
+To do this, I did a simple experiment utilizing the points from sample_points.json.  I created geohashes
+for each of these points, listed here:
+
+    - A shuffled list of hashes:
+        manhattan3
+        london1
+        brooklyn2
+        athens1
+        paris1
+        bronx3
+        moscow2
+        manhattan1
+        london2
+        manhattan2
+        cairo2
+        bronx1
+        paris2
+        manhattan4
+        cairo1
+        brooklyn1
+        moscow1
+        bronx2
+        athens2
+        brooklyn3
+
+I then sorted these hashes, hoping to see groupings and trends.  The results of which are listed here:
+
+    The sorted list of hashes:
+        brooklyn2
+        brooklyn1
+        brooklyn3
+        manhattan1
+        manhattan2
+        manhattan3
+        manhattan4
+        bronx1
+        bronx2
+        bronx3
+        london1
+        london2
+        cairo2
+        cairo1
+        athens2
+        athens1
+        paris2
+        paris1
+        moscow2
+        moscow1
+
+The results of this experiment show that geohashes certainly do a good job at signifying 'like' points, especially
+at the micro level.  At the macro level, I would have liked to seen more fluid transitions, for example London
+should have been followed by Paris, not Cairo.  That being said, geohashes accomplish a lot of the heavy lifting.
