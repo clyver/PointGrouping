@@ -2,7 +2,6 @@ import Geohash
 from geopy.distance import vincenty
 import json
 import sys
-import math
 import pprint
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -54,13 +53,16 @@ def initialize():
     # Data is ready and sanitized
     return points, num_groups
 
+
 def finalize(groups):
     """
     Write our found groups to groups.json
     :param groups: Dict containing the point groupings
     :return: Void
     """
-    pass
+    with open('groups.json', 'w') as solution:
+        json.dump(groups, solution, indent=4)
+
 
 def hash(point_lat, point_lon, point_id):
     """
@@ -78,9 +80,9 @@ def hash(point_lat, point_lon, point_id):
 
 def distributed_indices(list_len, k):
     """
-
+    Given a list len, return k evenly distributed indices
     :param list_len: Int length of the list
-    :param : Int desired number of distributed indicies
+    :param k: Int desired number of distributed indices
     :return: A list of evenly distributed k indices
     """
     return [int(i*list_len/float(k)) for i in range(k)]
@@ -110,6 +112,7 @@ def find_anchors(index, anchors):
                 return [anchors[i], anchors[i+1]]
         i += 1
     return [anchors[num_anchors - 1]]
+
 
 def nearest_neighbor(point, neighbor1, neighbor2):
     """
@@ -161,12 +164,14 @@ def group(points, num_groups):
     """
     # Sort the points by their hashes.  This provides some degree of clustering
     sorted_points = sorted(hashed_points, key=lambda x: x.get(geohash))
+
     """
     # Test scaffolding
     print "Sorted Points"
     for h in sorted_points:
         print h.get(id), h.get(geohash)
     """
+
     # Knowing that the list is now grouped to an extent,
     # We pick out evenly spaced num_groups indices, which we believe
     # to be relatively far from each other
@@ -196,11 +201,18 @@ def group(points, num_groups):
         groups.get(nearest_anchor.get(id)).append(this_point.get(id))
         i += 1
 
+    # Now format the groups accroding to the project spec
+    groups = [value for key, value in groups.iteritems()]
     return groups
 
 
-if __name__ == '__main__':
+def run():
+    # Init data
     points, num_groups = initialize()
+    # Construct the groups
     grouped_points = group(points, num_groups)
-    # TODO We need to groom our grouped points, as per the spec
-    pp.pprint(grouped_points)
+    # Write out our results and close up shop
+    finalize(grouped_points)
+
+if __name__ == '__main__':
+    run()
