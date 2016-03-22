@@ -21,7 +21,12 @@ These packages are installable via pip:
 ## Performance
 
 We're currently in O(N^2) space.  This comes from the fact that there is a point where we're iterating over the points,
-while also iterating over anchors.  There is the potential for the number of points to equal the number of anchors (n*n)
+while also iterating over anchors.  There is the potential for the number of points to equal the number of anchors (n*n).
 
 ## Testing
-Testing was accomplished by testing each of the helpers, as well as and e2e test on our main group() function
+Testing was accomplished by testing each of the helpers, as well as and e2e test on our main group() function.
+
+## TODO
++ Try to do better than O(N^2)
++ Improve the accuracy at the macro level
++ Tackle the stretch goal, "distribution"
