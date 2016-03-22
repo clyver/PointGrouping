@@ -2,16 +2,16 @@
 
 This project aims at solving MakeSpace's Platform Engineer challenge, the [point-grouping-test](https://github.com/makingspace/point-grouping-test).
 
-    ### Algorithm Overview:
-    + Parse our data and assign geohashes to each point
-    + Select the points that will anchor each group, which all other points will pivot off of
-    + Calculate the closest anchor for every point, and assign groupings
-    + Return our groups
+### Algorithm Overview:
++ Parse our data and assign geohashes to each point
++ Select the points that will anchor each group, which all other points will pivot off of
++ Calculate the closest anchor for every point, and assign groupings
++ Return our groups
 
-    ### Limitations:
-    My initial implementation relies on the fact that nearby locations have similar geohashes.  At a macro/international level,
-    this assumption should potentially not be made and can lead to non-optimized results.  That being said, if we're working at the micro
-    level, within a city for example, these assumptions facilitate a clean design and produce accurate results.
+### Limitations:
+My initial implementation relies on the fact that nearby locations have similar geohashes.  At a macro/international level,
+this assumption should potentially not be made and can lead to non-optimized results.  That being said, if we're working at the micro
+level, within a city for example, these assumptions facilitate a clean design and produce accurate results.
 
 ## Dependencies
 To accomplish my solution, I utilized [geopy](https://pypi.python.org/pypi/geopy) and [Geohash](https://pypi.python.org/pypi/Geohash/).
