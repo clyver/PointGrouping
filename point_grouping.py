@@ -67,10 +67,8 @@ def finalize(groups):
 def hash(point):
     """
     Create a geohash for the given coordinate
-    :param point_lat: Float representing a latitude value
-    :param point_lon: Float representing a longitude value
-    :param point_id: String representing a unique identifier for this point
-    :return: Dict containing the input parameters, plus the newly created geohash
+    :param point: Dict containing lat/lon fields
+    :return: Dict updated with the newly created geohash
     """
     ghash = Geohash.encode(point.get(lat), point.get(lon))
     point[geohash] = ghash
@@ -174,14 +172,16 @@ def group(points, num_groups):
     # to be relatively far from each other
     anchor_indices = distributed_indices(num_points, num_groups)
 
-    # We say that these indices are anchors each of the groups we'll create
+    # We say that these indices are anchors for each of the groups we'll create
     anchors = [sorted_points[index] for index in anchor_indices]
     groups = {anchor.get(id): [] for anchor in anchors}
 
     # Go through each point and assign it to a group
     i = 0
     while i < num_points:
-        # Determine the indices of the nearby neighbors
+        this_point = sorted_points[i]
+
+        # Determine the indices of the nearby anchors
         nearby_anchors = find_anchors(i, anchor_indices)
 
         # Resolve the points these indexes resolve to
@@ -191,7 +191,6 @@ def group(points, num_groups):
         anchor2 = None
         if len(nearby_anchors) == 2:
             anchor2 = sorted_points[nearby_anchors[1]]
-        this_point = sorted_points[i]
 
         # Determine the closest anchor
         nearest_anchor = nearest_neighbor(this_point, anchor1, anchor2)
