@@ -21,7 +21,7 @@ def initialize():
     """
     # Read in the points we'll be grouping
     try:
-        json_data = open('./initialExperiments/sample_points.json').read()
+        json_data = open('./points.json').read()
         points = json.loads(json_data)
         num_points = len(points)
     except IOError:
