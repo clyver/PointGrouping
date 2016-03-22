@@ -64,7 +64,7 @@ def finalize(groups):
         json.dump(groups, solution, indent=4)
 
 
-def hash(point_lat, point_lon, point_id):
+def hash(point):
     """
     Create a geohash for the given coordinate
     :param point_lat: Float representing a latitude value
@@ -72,15 +72,14 @@ def hash(point_lat, point_lon, point_id):
     :param point_id: String representing a unique identifier for this point
     :return: Dict containing the input parameters, plus the newly created geohash
     """
-    return {geohash: Geohash.encode(point_lat, point_lon),
-            lat: point_lat,
-            lon: point_lon,
-            id: point_id}
+    ghash = Geohash.encode(point.get(lat), point.get(lon))
+    point[geohash] = ghash
+    return point
 
 
 def distributed_indices(list_len, k):
     """
-    Given a list len, return k evenly distributed indices
+    Given a list len, return k evenly distributed indices in the list
     :param list_len: Int length of the list
     :param k: Int desired number of distributed indices
     :return: A list of evenly distributed k indices
@@ -90,7 +89,7 @@ def distributed_indices(list_len, k):
 
 def find_anchors(index, anchors):
     """
-    Find the surrounding group index anchors for the given index, at most 2
+    Find the indices for the anchors surrounding this index, at most 2
     :param index: Int index of elem in list
     :param anchors: List of ints representing the determined group anchors
     :return: List of ints representing the nearest anchors for the given index
@@ -111,6 +110,7 @@ def find_anchors(index, anchors):
             else:
                 return [anchors[i], anchors[i+1]]
         i += 1
+    # At the end of the list
     return [anchors[num_anchors - 1]]
 
 
@@ -150,10 +150,7 @@ def group(points, num_groups):
     # Create hashes for every point
     hashed_points = []
     for point in points:
-        point_lat = point.get(lat)
-        point_lon = point.get(lon)
-        point_id = point.get(id)
-        hashed_points.append(hash(point_lat, point_lon, point_id))
+        hashed_points.append(hash(point))
 
     """
     # Test scaffolding
@@ -176,10 +173,9 @@ def group(points, num_groups):
     # We pick out evenly spaced num_groups indices, which we believe
     # to be relatively far from each other
     anchor_indices = distributed_indices(num_points, num_groups)
-    anchors = [sorted_points[index] for index in anchor_indices]
-    # Now determine the distance from each point to the anchors
-    # Each of indices will act as an anchor for each group
 
+    # We say that these indices are anchors each of the groups we'll create
+    anchors = [sorted_points[index] for index in anchor_indices]
     groups = {anchor.get(id): [] for anchor in anchors}
 
     # Go through each point and assign it to a group
@@ -187,13 +183,16 @@ def group(points, num_groups):
     while i < num_points:
         # Determine the indices of the nearby neighbors
         nearby_anchors = find_anchors(i, anchor_indices)
+
         # Resolve the points these indexes resolve to
         anchor1 = sorted_points[nearby_anchors[0]]
+
         # We're not guaranteed a second nearby anchor!
         anchor2 = None
         if len(nearby_anchors) == 2:
             anchor2 = sorted_points[nearby_anchors[1]]
         this_point = sorted_points[i]
+
         # Determine the closest anchor
         nearest_anchor = nearest_neighbor(this_point, anchor1, anchor2)
 
@@ -201,7 +200,7 @@ def group(points, num_groups):
         groups.get(nearest_anchor.get(id)).append(this_point.get(id))
         i += 1
 
-    # Now format the groups accroding to the project spec
+    # Now format the groups according to the project spec
     groups = [value for key, value in groups.iteritems()]
     return groups
 
