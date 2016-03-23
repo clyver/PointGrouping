@@ -30,3 +30,18 @@ Testing was accomplished by testing each of the helpers, as well as and e2e test
 + Try to do better than O(N^2)
 + Improve the accuracy at the macro level
 + Tackle the stretch goal, "distribution"
+
+## Other Considerations
+After doing some research on ways to increase performance, I came across some machine learning resources.  It looks
+like one of the more optimal solutions could implement [k-means or DBSCAN clustering](http://geoffboeing.com/2014/08/clustering-to-reduce-spatial-data-set-size/).
+That being said, I've enjoyed learning about geohashes and for now I'm interested in boosting performance utilizing them.
+DBSCAN and k-means are tools to keep in mind, and perhaps even implement at a later time.  I just wanted to illustrate my
+ability to research a problem and acknowledge the strengths in other solutions, while being proud of my own.
+
+## Thank You!
+I would like to sincerely thank the MakeSpace Engineering team for reviewing my candidacy.  Throughout the entire
+interview process I've enjoyed learning about the tough problems the team is solving, and am excited to pursue
+available opportunities to contribute as well. Thank you for your consideration,
+
+Chris Lyver <br>
+(914) 826-7185
