@@ -1,10 +1,7 @@
 import Geohash
-from geopy.distance import vincenty
 import json
 import sys
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
+import numpy
 
 # Some recurring strings we'll be referencing
 geohash = "geohash"
@@ -75,67 +72,6 @@ def hash(point):
     return point
 
 
-def distributed_indices(list_len, k):
-    """
-    Given a list len, return k evenly distributed indices in the list
-    :param list_len: Int length of the list
-    :param k: Int desired number of distributed indices
-    :return: A list of evenly distributed k indices
-    """
-    return [int(i*list_len/float(k)) for i in range(k)]
-
-
-def find_anchors(index, anchors):
-    """
-    Find the indices for the anchors surrounding this index, at most 2
-    :param index: Int index of elem in list
-    :param anchors: List of ints representing the determined group anchors
-    :return: List of ints representing the nearest anchors for the given index
-    """
-
-    num_anchors = len(anchors)
-    i = 0
-    while i < num_anchors - 1:
-        # At the beginning of a list
-        if index <= anchors[i]:
-            return [anchors[i]]
-        # A sandwiched case
-        elif anchors[i] <= index <= anchors[i+1]:
-            if index == anchors[i]:
-                return [anchors[i]]
-            elif index == anchors[i+1]:
-                return [anchors[i+1]]
-            else:
-                return [anchors[i], anchors[i+1]]
-        i += 1
-    # At the end of the list
-    return [anchors[num_anchors - 1]]
-
-
-def nearest_neighbor(point, neighbor1, neighbor2):
-    """
-    Find the nearest neighbor of the provided point
-    :param point: Dict containing lat/lon positions
-    :param neighbor1: Dict containing lat/lon positions
-    :param neighbor2: Dict containing lat/lon positions
-    :return: Dict closest to the point
-    """
-    if neighbor2 is None:
-        return neighbor1
-
-    point_lat_lon = (point.get(lat), point.get(lon))
-    n1_lat_lon = (neighbor1.get(lat), neighbor1.get(lon))
-    n2_lat_lon = (neighbor2.get(lat), neighbor2.get(lon))
-
-    n1_dist = vincenty(point_lat_lon, n1_lat_lon)
-    n2_dist = vincenty(point_lat_lon, n2_lat_lon)
-
-    if n1_dist < n2_dist:
-        return neighbor1
-    else:
-        return neighbor2
-
-
 def group(points, num_groups):
     """
     Group the points by proximity into the specified number of groups
@@ -144,7 +80,6 @@ def group(points, num_groups):
     :return: A list of groups (lists), each containing 'near' points
     """
 
-    num_points = len(points)
     # Create hashes for every point
     hashed_points = []
     for point in points:
@@ -157,6 +92,7 @@ def group(points, num_groups):
         print h.get(id), h.get(geohash)
     print ""
     """
+
     # Sort the points by their hashes.  This provides some degree of clustering
     sorted_points = sorted(hashed_points, key=lambda x: x.get(geohash))
 
@@ -167,41 +103,26 @@ def group(points, num_groups):
         print h.get(id), h.get(geohash)
     """
 
-    # Knowing that the list is now grouped to an extent,
-    # We pick out evenly spaced num_groups indices, which we believe
-    # to be relatively far from each other
-    anchor_indices = distributed_indices(num_points, num_groups)
+    # Split up the sorted points into our groups
+    # TODO: Sanitize num_groups
+    if num_groups > 0:
+        groups = numpy.array_split(sorted_points, num_groups)
+    else:
+        # If 0 specified groups, it's intuitive to return 1 monolithic group
+        groups = numpy.array_split(sorted_points, 1)
 
-    # We say that these indices are anchors for each of the groups we'll create
-    anchors = [sorted_points[index] for index in anchor_indices]
-    groups = {anchor.get(id): [] for anchor in anchors}
+    # Currently our groups contain the point objects.
+    # We're interested in only returning the corresponding ids though
+    # TODO: Form the data while we sort, this is resource heavy...
+    groomed_groups = []
+    for group in groups:
+        groomed_group = []
+        for point in group:
+            # Each point is now represented by its id
+            groomed_group.append(point.get(id))
+        groomed_groups.append(groomed_group)
 
-    # Go through each point and assign it to a group
-    i = 0
-    while i < num_points:
-        this_point = sorted_points[i]
-
-        # Determine the indices of the nearby anchors
-        nearby_anchors = find_anchors(i, anchor_indices)
-
-        # Resolve the points these indexes resolve to
-        anchor1 = sorted_points[nearby_anchors[0]]
-
-        # We're not guaranteed a second nearby anchor!
-        anchor2 = None
-        if len(nearby_anchors) == 2:
-            anchor2 = sorted_points[nearby_anchors[1]]
-
-        # Determine the closest anchor
-        nearest_anchor = nearest_neighbor(this_point, anchor1, anchor2)
-
-        # We have our mapping, put this point into the according group
-        groups.get(nearest_anchor.get(id)).append(this_point.get(id))
-        i += 1
-
-    # Now format the groups according to the project spec
-    groups = [value for key, value in groups.iteritems()]
-    return groups
+    return groomed_groups
 
 
 def run():
